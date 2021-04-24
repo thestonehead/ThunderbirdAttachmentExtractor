@@ -1,0 +1,67 @@
+[
+  {
+    "namespace": "attachmentExtractorApi",
+	"types": [
+		{
+			"id": "Attachment",
+			"type": "object",
+			"description": "Attachment info",
+			"properties": {
+				"contentType": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				},
+				"partName": {
+					"type": "string"
+				},
+				"size": {
+					"type": "integer"
+				}
+			}
+		},
+		{
+			"id": "MessageIdWithAttachments",
+			"type": "object",
+			"description": "Message id with attachments",
+			"properties": {
+				"id": {
+					"type": "integer",
+					"minimum": 1
+				},
+				"folder": {
+					"type": "string"
+				},
+				"account": {
+					"type": "string"
+				},
+				"attachments": {
+					"type": "array",
+					"items": {
+						"$ref": "Attachment"
+					}
+				}
+			}
+		}
+	],
+    "functions": [
+      {
+        "name": "detachAttachmentsFromSelectedMessages",
+        "type": "function",
+        "description": "Starts detachment process for selected messages.",
+        "async": true,
+        "parameters": [
+		  {
+			"name": "messages",
+            "type": "array",
+            "description": "ID's of the messages with attachments to extract.",
+			"items": {
+              "$ref": "MessageIdWithAttachments"
+            }
+		  }
+        ]
+      }
+    ]
+  }
+]
