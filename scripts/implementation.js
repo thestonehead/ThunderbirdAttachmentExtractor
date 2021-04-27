@@ -9,6 +9,7 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 			const filenames = [];
 			const originalFilenames =[];
 			const messageUrls = [];
+			const deletedFiles = [];
 			
 			// Ask user for preferred attachment filename format
 			let filenameFormat = {value: "%date%_%fromMail%_%subject%_%filename%"};
@@ -43,6 +44,12 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 					let msgMessageUrls = [];
 					
 					for (let attachment of msg.attachments) {
+						// If the attachment is already deleted, skip from processing
+						if (attachment.contentType == "text/x-moz-deleted"){
+							deletedFiles.push(attachment.name);
+							continue;
+						}
+						
 						// Handle filename
 						let filename = filenameFormat.value;
 						let [_, filenameWithoutExtension, filenameExtension] = attachment.name.match(/(.*)(\..*)$/)
@@ -85,6 +92,15 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 					messageUrls.push(msgMessageUrls);
 				}
 				
+				// Notify user about files that can't be saved
+				if (deletedFiles.length > 0) {
+					Services.prompt.alert(null, "Some files can't be saved", "These files have already been deleted and cannot be saved:\n" + deletedFiles.join("\n"));
+					// Don't continue if all of the files are already deleted
+					if (types.flat().length == 0){
+						return;
+					}
+				}
+				
 				// messenger.detachAllAttachments throws and exception when attachments from multiple messages are given
 				// Therefore we work around by first saving all of the attachments to a selected folder
 				messenger.saveAllAttachments(
@@ -96,6 +112,9 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 				// And then after checking with the user, we delete attachments message by message without further prompts
 				if (Services.prompt.confirm(null, "Are you sure", "Do you wish to delete these attachments from your e-mails? (Irreversible!)\n" + originalFilenames.join("\n"))){
 					for (let i in messages){
+						if (types[i].length == 0) {
+							continue;
+						}
 						messenger.detachAllAttachments(
 							types[i],
 							attachmentUrls[i],
