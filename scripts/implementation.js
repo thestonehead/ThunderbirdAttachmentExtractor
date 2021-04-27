@@ -35,7 +35,6 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 					let messageService = messenger.messageServiceFromURI(messageUri);
 					let attachmentUriBase = messageService.getUrlForUri(messageUri, neckoURL, null).spec;
 					
-					console.log(message);
 					// Detachment data per message
 					let msgTypes= [];
 					let msgAttachmentUrls = [];
@@ -111,7 +110,6 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 			}
 			catch(ex){
 				Services.wm.getMostRecentWindow("mail:3pane").alert("Error: " + ex.toString());
-				console.log(ex);
 			}
         },
       }

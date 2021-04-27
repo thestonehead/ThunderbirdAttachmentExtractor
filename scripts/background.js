@@ -8,16 +8,12 @@ browser.menus.create({
 browser.menus.onClicked.addListener(onClicked);
 
 async function onClicked(info, tab){
-	console.log("onClicked");
 	if (info.menuItemId != "extract-attachments")
 		return;
 	
 	// Load a message list
 	const messages = await browser.mailTabs.getSelectedMessages(tab.id);
-	console.log(info);
-	console.log(tab);
-	console.log(messages);
-	
+
 	var allMessages = [];
 	// Helper inline function for getting attachment details from a message
 	const createMessage = async function(message){
@@ -44,6 +40,5 @@ async function onClicked(info, tab){
 
 
 function onCreated() {
-	console.log("Created");
 }
 
