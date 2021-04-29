@@ -52,7 +52,7 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 						
 						// Handle filename
 						let filename = filenameFormat.value;
-						let [_, filenameWithoutExtension, filenameExtension] = attachment.name.match(/(.*)(\..*)$/)
+						let [_, filenameWithoutExtension, filenameExtension] = attachment.name.match(/(.*)(\..*)$/) || [null, attachment.name, ""];
 						if (useTemplate){
 							const authorRegex = /(.*)?<(.*)>/;
 							let [_, authorName, authorMail] = message.mime2DecodedAuthor.match(authorRegex) || [null, null, message.mime2DecodedAuthor];
@@ -78,7 +78,7 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 							msgFilenames.push(encodeURI(filename + filenameExtension));
 						}
 						msgOriginalFilenames.push(encodeURI(attachment.name)); //Save original attachment filename to be able to delete them afterwards
-						usedFilenames[encodeURI(filename)] = (usedFilenameCount || 0) + 1;
+						usedFilenames[encodeURI(filename + filenameExtension)] = (usedFilenameCount || 0) + 1;
 
 						// Handle content type, attachment and message urls
 						msgTypes.push(attachment.contentType);
@@ -94,7 +94,7 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 				
 				// Notify user about files that can't be saved
 				if (deletedFiles.length > 0) {
-					Services.prompt.alert(null, "Some files can't be saved", "These files have already been deleted and cannot be saved:\n" + deletedFiles.join("\n"));
+					Services.prompt.alert(null, "Some files can't be saved", "These files have already been deleted and cannot be saved:\n" + deletedFiles.flat().filter(s=>s && s.trim().length>0).join("\n"));
 					// Don't continue if all of the files are already deleted
 					if (types.flat().length == 0){
 						return;
