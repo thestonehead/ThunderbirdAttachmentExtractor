@@ -15,7 +15,7 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 			const deletedFiles = [];
 			
 			// Helper inline function for preparing filenames for displaying to the user
-			const prepareFilesNamesForDisplaying = async function(filenames) {
+			const prepareFilesNamesForDisplaying = function(filenames) {
 				const filteredFileNames = filenames.map(s=>s.trim()).filter(s=>s.length>0);
 				if (filteredFileNames.length > MAX_FILENAMES_FOR_DIALOG) {
 					const slicedFileNames = filteredFileNames.slice(0, MAX_FILENAMES_FOR_DIALOG);
@@ -109,7 +109,7 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 				
 				// Notify user about files that can't be saved
 				if (deletedFiles.length > 0) {
-					Services.prompt.alert(null, "Some files can't be saved", "These files have already been deleted and cannot be saved:\n" + (await prepareFilesNamesForDisplaying(deletedFiles.flat())).join("\n"));
+					Services.prompt.alert(null, "Some files can't be saved", "These files have already been deleted and cannot be saved:\n" + prepareFilesNamesForDisplaying(deletedFiles.flat()).join("\n"));
 					// Don't continue if all of the files are already deleted
 					if (types.flat().length == 0){
 						return;
@@ -125,7 +125,7 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 					messageUrls.flat()
 				  );
 				// And then after checking with the user, we delete attachments message by message without further prompts
-				if (Services.prompt.confirm(null, "Are you sure", "Do you wish to delete these attachments from your e-mails? (Irreversible!)\n" + (await prepareFilesNamesForDisplaying(originalFilenames.flat())).join("\n"))){
+				if (Services.prompt.confirm(null, "Are you sure", "Do you wish to delete these attachments from your e-mails? (Irreversible!)\n" + prepareFilesNamesForDisplaying(originalFilenames.flat()).join("\n"))){
 					for (let i in messages){
 						if (types[i].length == 0) {
 							continue;
