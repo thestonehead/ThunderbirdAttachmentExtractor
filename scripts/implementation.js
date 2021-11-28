@@ -3,6 +3,9 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
     return {
       attachmentExtractorApi: {
         async detachAttachmentsFromSelectedMessages(messages) {
+			// Constants
+			const MAX_FILENAMES_FOR_DIALOG = 20;
+
 			// Data needed for detachment
 			const types = [];
 			const attachmentUrls = [];
@@ -11,6 +14,18 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 			const messageUrls = [];
 			const deletedFiles = [];
 			
+			// Helper inline function for preparing filenames for displaying to the user
+			const prepareFilesNamesForDisplaying = function(filenames) {
+				const filteredFileNames = filenames.map(s=>s.trim()).filter(s=>s.length>0);
+				if (filteredFileNames.length > MAX_FILENAMES_FOR_DIALOG) {
+					const slicedFileNames = filteredFileNames.slice(0, MAX_FILENAMES_FOR_DIALOG);
+					slicedFileNames.push(`and ${filteredFileNames.length-MAX_FILENAMES_FOR_DIALOG} more`);
+					return slicedFileNames;
+				} else {
+					return filteredFileNames;
+				}
+			}
+
 			// Ask user for preferred attachment filename format
 			let filenameFormat = {value: "%date%_%fromMail%_%subject%_%filename%"};
 			const useTemplate = Services.prompt.prompt(null,  "Input your preferred filename template", "Placeholders you can use: %date%, %time%, %fromMail%, %subject%, %filename%. Press Cancel if you want to use just the original filenames.", filenameFormat, null, {});
@@ -94,7 +109,7 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 				
 				// Notify user about files that can't be saved
 				if (deletedFiles.length > 0) {
-					Services.prompt.alert(null, "Some files can't be saved", "These files have already been deleted and cannot be saved:\n" + deletedFiles.flat().filter(s=>s && s.trim().length>0).join("\n"));
+					Services.prompt.alert(null, "Some files can't be saved", "These files have already been deleted and cannot be saved:\n" + prepareFilesNamesForDisplaying(deletedFiles.flat()).join("\n"));
 					// Don't continue if all of the files are already deleted
 					if (types.flat().length == 0){
 						return;
@@ -110,7 +125,7 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 					messageUrls.flat()
 				  );
 				// And then after checking with the user, we delete attachments message by message without further prompts
-				if (Services.prompt.confirm(null, "Are you sure", "Do you wish to delete these attachments from your e-mails? (Irreversible!)\n" + originalFilenames.join("\n"))){
+				if (Services.prompt.confirm(null, "Are you sure", "Do you wish to delete these attachments from your e-mails? (Irreversible!)\n" + prepareFilesNamesForDisplaying(originalFilenames.flat()).join("\n"))){
 					for (let i in messages){
 						if (types[i].length == 0) {
 							continue;
