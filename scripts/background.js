@@ -25,6 +25,11 @@ async function onClicked(info, tab){
 
 	// Get first page of messages
 	let currentPage = await browser.mailTabs.getSelectedMessages(tab.id);
+	if (currentPage.messages.length == 0){
+		browser.attachmentExtractorApi.showAlertToUser("Oops", "No message selected. Please select a message (or multiple) with an attachment.");
+		return;
+	}
+	
 	// Iterate through the messages
 	for (let m of currentPage.messages) {
 		allMessages.push(await createMessage(m));

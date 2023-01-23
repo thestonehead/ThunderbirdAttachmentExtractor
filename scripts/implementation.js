@@ -146,6 +146,14 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 				Services.wm.getMostRecentWindow("mail:3pane").alert("Error: " + ex.toString());
 			}
         },
+		showAlertToUser(title, text) {
+			try {
+				Services.prompt.alert(null, title, text);
+			}
+			catch(ex){
+				Services.wm.getMostRecentWindow("mail:3pane").alert("Error: " + ex.toString());
+			}
+		},
       }
     }
   }
