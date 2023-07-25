@@ -3,25 +3,6 @@
     "namespace": "attachmentExtractorApi",
 	"types": [
 		{
-			"id": "Attachment",
-			"type": "object",
-			"description": "Attachment info",
-			"properties": {
-				"contentType": {
-					"type": "string"
-				},
-				"name": {
-					"type": "string"
-				},
-				"partName": {
-					"type": "string"
-				},
-				"size": {
-					"type": "integer"
-				}
-			}
-		},
-		{
 			"id": "MessageIdWithAttachments",
 			"type": "object",
 			"description": "Message id with attachments",
@@ -39,7 +20,7 @@
 				"attachments": {
 					"type": "array",
 					"items": {
-						"$ref": "Attachment"
+						"$ref": "messages.MessageAttachment"
 					}
 				}
 			}
