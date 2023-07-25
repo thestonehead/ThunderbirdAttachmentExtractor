@@ -16,6 +16,7 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 			const messageUrls = [];
 			const deletedFiles = [];
 			
+
 			// Helper inline function for preparing filenames for displaying to the user
 			const prepareFilesNamesForDisplaying = function(filenames) {
 				const filteredFileNames = filenames.map(s=>s.trim()).filter(s=>s.length>0);
@@ -39,18 +40,18 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 			
 			
 			try {
-				// This doesn't work:
-				// let messenger = Cc["@mozilla.org/messenger;1"].createInstance(Ci.nsIMessenger);
 				let window = Services.wm.getMostRecentWindow("mail:3pane");
 				let messenger = window.messenger;
-			
+				// Former is TB115, later is TB102.
+				const messageServiceFromURI = MailServices.messageServiceFromURI || messenger.messageServiceFromURI;
+
 				// Keep track of used filenames to ensure no overlap by adding _# at the end
 				const usedFilenames= {};
 				for (let msg of messages) {
 					let folder = context.extension.folderManager.get(msg.account, msg.folder);
 					let message = context.extension.messageManager.get(msg.id);
 					let messageUri = folder.getUriForMsg(message);
-					let messageService = MailServices.messageServiceFromURI(messageUri);
+					let messageService = messageServiceFromURI(messageUri);
 					let attachmentUriBase = messageService.getUrlForUri(messageUri).spec;
 
 					// Detachment data per message
