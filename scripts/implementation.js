@@ -1,3 +1,5 @@
+var { MailServices } = ChromeUtils.import("resource:///modules/MailServices.jsm");
+
 var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
   getAPI(context) {
     return {
@@ -14,6 +16,7 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 			const messageUrls = [];
 			const deletedFiles = [];
 			
+
 			// Helper inline function for preparing filenames for displaying to the user
 			const prepareFilesNamesForDisplaying = function(filenames) {
 				const filteredFileNames = filenames.map(s=>s.trim()).filter(s=>s.length>0);
@@ -37,20 +40,20 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 			
 			
 			try {
-				// This doesn't work:
-				// let messenger = Cc["@mozilla.org/messenger;1"].createInstance(Ci.nsIMessenger);
-				let messenger = Services.wm.getMostRecentWindow("mail:3pane").messenger;
-				let neckoURL = {};
-			
+				let window = Services.wm.getMostRecentWindow("mail:3pane");
+				let messenger = window.messenger;
+				// Former is TB115, later is TB102.
+				const messageServiceFromURI = MailServices.messageServiceFromURI || messenger.messageServiceFromURI;
+
 				// Keep track of used filenames to ensure no overlap by adding _# at the end
 				const usedFilenames= {};
 				for (let msg of messages) {
 					let folder = context.extension.folderManager.get(msg.account, msg.folder);
 					let message = context.extension.messageManager.get(msg.id);
-					let messageUri = folder.baseMessageURI + "#" + message.messageKey;
-					let messageService = messenger.messageServiceFromURI(messageUri);
-					let attachmentUriBase = messageService.getUrlForUri(messageUri, neckoURL, null).spec;
-					
+					let messageUri = folder.getUriForMsg(message);
+					let messageService = messageServiceFromURI(messageUri);
+					let attachmentUriBase = messageService.getUrlForUri(messageUri).spec;
+
 					// Detachment data per message
 					let msgTypes= [];
 					let msgAttachmentUrls = [];
@@ -101,10 +104,10 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 						msgMessageUrls.push(messageUri)
 					}
 					types.push(msgTypes);
-					filenames.push(msgFilenames);
-					originalFilenames.push(msgOriginalFilenames);
 					attachmentUrls.push(msgAttachmentUrls);
+					filenames.push(msgFilenames);
 					messageUrls.push(msgMessageUrls);
+					originalFilenames.push(msgOriginalFilenames);
 				}
 				
 				// Notify user about files that can't be saved
@@ -117,13 +120,57 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 				}
 				
 				// messenger.detachAllAttachments throws and exception when attachments from multiple messages are given
-				// Therefore we work around by first saving all of the attachments to a selected folder
-				messenger.saveAllAttachments(
-					types.flat(),
-					attachmentUrls.flat(),
-					filenames.flat(),
-					messageUrls.flat()
-				  );
+				// Therefore we work around by first saving all of the attachments to a selected folder.
+				// There are reports, that saving sometimes fails. Lets save message by message and wait for its completion.
+				let filePicker = Cc["@mozilla.org/filepicker;1"].createInstance(Ci.nsIFilePicker);
+				filePicker.init(window, "Save Attachmets", filePicker.modeGetFolder);
+				let selectedFolder = await new Promise(resolve => {
+					filePicker.open(rv => {
+					  if (rv != Ci.nsIFilePicker.returnOK || !filePicker.file) {
+						resolve(null)
+					  } else {
+					  	resolve(filePicker.file);
+					  }
+					});
+				});
+				if (!selectedFolder || !selectedFolder.isDirectory()) {
+					return;
+				}
+
+				for (let m=0; m<messages.length; m++){
+					for (let i=0; i<filenames[m].length; i++) {
+						let filename = filenames[m][i];
+						let attachmentUrl = attachmentUrls[m][i];
+						let type = types[m][i];
+						let messageUrl = messageUrls[m][i];
+						
+						let targetDir = selectedFolder.clone();
+						targetDir.append(filename);
+						let file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsIFile);
+						file.initWithPath(targetDir.path);
+						
+						let success = await new Promise(resolve => {
+							let urlListener = {
+								OnStartRunningUrl(url) {},
+								OnStopRunningUrl(url, status) {
+								  resolve(Components.isSuccessCode(status));
+								},
+							  };
+							messenger.saveAttachmentToFile(
+								file,
+								attachmentUrl,
+								messageUrl,
+								type,
+								urlListener
+							);
+						});
+						if (!success) {
+							Services.prompt.alert(null, "Save Attachments", "Could not save attachment, aborting.");
+							return;
+						}
+					}
+				}
+
 				// And then after checking with the user, we delete attachments message by message without further prompts
 				if (Services.prompt.confirm(null, "Are you sure", "Do you wish to delete these attachments from your e-mails? (Irreversible!)\n" + prepareFilesNamesForDisplaying(originalFilenames.flat()).join("\n"))){
 					for (let i in messages){
