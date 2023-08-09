@@ -3,13 +3,19 @@ browser.menus.create({
   title: "Extract attachments",
   contexts: ["message_list"]
 }, onCreated);
+browser.menus.create({
+  id: "delete-attachments",
+  title: "Delete attachments",
+  contexts: ["message_list"]
+}, onCreated);
 
 
 browser.menus.onClicked.addListener(onClicked);
 
 async function onClicked(info, tab){
-	if (info.menuItemId != "extract-attachments")
+	if (info.menuItemId != "extract-attachments" && info.menuItemId != "delete-attachments")  
 		return;
+		
 	
 	var allMessages = [];
 	// Helper inline function for getting attachment details from a message
@@ -42,8 +48,17 @@ async function onClicked(info, tab){
 		}
 	}
 
-	// Call Experiment API to detach attachments from selected messages
-	await browser.attachmentExtractorApi.detachAttachmentsFromSelectedMessages(allMessages);
+	if (info.menuItemId == "extract-attachments") {
+		// Call Experiment API to detach attachments from selected messages
+		await browser.attachmentExtractorApi.detachAttachmentsFromSelectedMessages(allMessages);
+	}
+	else if (info.menuItemId == "delete-attachments")  
+	{
+		await browser.attachmentExtractorApi.deleteAttachmentsFromSelectedMessages(allMessages);
+	}else {
+		browser.attachmentExtractorApi.showAlertToUser("Oops", "Unknown action.");
+	}
+	
 }
 
 
