@@ -4,8 +4,7 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 	getAPI(context) {
 		// Constants
 		const MAX_FILENAMES_FOR_DIALOG = 20;
-		// Former is TB115, later is TB102.
-		const messageServiceFromURI = MailServices.messageServiceFromURI || messenger.messageServiceFromURI;
+
 
 		// Helper inline function for preparing filenames for displaying to the user
 		const prepareFilesNamesForDisplaying = function (filenames) {
@@ -19,7 +18,7 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 			}
 		};
 
-		const processMessages = function(messages, filenameFormat, useTemplate) {
+		const processMessages = function(messages, filenameFormat, useTemplate, messageServiceFromURI) {
 			const usedFilenames = {};
 			const types = [];
 			const attachmentUrls = [];
@@ -110,10 +109,11 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 					try {
 						let window = Services.wm.getMostRecentWindow("mail:3pane");
 						let messenger = window.messenger;
-
+						// Former is TB115, later is TB102.
+						const messageServiceFromURI = MailServices.messageServiceFromURI || messenger.messageServiceFromURI;
 
 						// Keep track of used filenames to ensure no overlap by adding _# at the end
-						const [types, attachmentUrls, filenames, messageUrls, originalFilenames, deletedFiles] = processMessages(messages, filenameFormat, useTemplate);
+						const [types, attachmentUrls, filenames, messageUrls, originalFilenames, deletedFiles] = processMessages(messages, filenameFormat, useTemplate, messageServiceFromURI);
 
 						// Notify user about files that can't be saved
 						if (deletedFiles.length > 0) {
@@ -193,7 +193,9 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 					try {
 						const window = Services.wm.getMostRecentWindow("mail:3pane");
 						const messenger = window.messenger;
-						const [types, attachmentUrls, , messageUrls,  originalFilenames, ] = processMessages(messages, "", undefined);
+						// Former is TB115, later is TB102.
+						const messageServiceFromURI = MailServices.messageServiceFromURI || messenger.messageServiceFromURI;
+						const [types, attachmentUrls, , messageUrls,  originalFilenames, ] = processMessages(messages, "", undefined, messageServiceFromURI);
 						const filenames = originalFilenames;
 
 						// And then after checking with the user, we delete attachments message by message without further prompts
