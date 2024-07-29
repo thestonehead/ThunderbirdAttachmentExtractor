@@ -1,82 +1,82 @@
 [
-  {
-    "namespace": "attachmentExtractorApi",
-	"types": [
-		{
-			"id": "MessageIdWithAttachments",
-			"type": "object",
-			"description": "Message id with attachments",
-			"properties": {
-				"id": {
-					"type": "integer",
-					"minimum": 1
-				},
-				"folder": {
-					"type": "string"
-				},
-				"account": {
-					"type": "string"
-				},
-				"attachments": {
-					"type": "array",
-					"items": {
-						"$ref": "messages.MessageAttachment"
+	{
+		"namespace": "attachmentExtractorApi",
+		"types": [
+			{
+				"id": "MessageIdWithAttachments",
+				"type": "object",
+				"description": "Message id with attachments",
+				"properties": {
+					"id": {
+						"type": "integer",
+						"minimum": 1
+					},
+					"folder": {
+						"type": "string"
+					},
+					"account": {
+						"type": "string"
+					},
+					"attachments": {
+						"type": "array",
+						"items": {
+							"$ref": "messages.MessageAttachment"
+						}
 					}
 				}
 			}
-		}
-	],
-    "functions": [
-      {
-        "name": "detachAttachmentsFromSelectedMessages",
-        "type": "function",
-        "description": "Starts detachment process for selected messages.",
-        "async": true,
-        "parameters": [
-		  {
-			"name": "messages",
-            "type": "array",
-            "description": "ID's of the messages with attachments to extract.",
-			"items": {
-              "$ref": "MessageIdWithAttachments"
-            }
-		  }
-        ]
-      },
-	  {
-        "name": "showAlertToUser",
-        "type": "function",
-        "description": "Shows a simple alert pop-up to the user.",
-        "async": false,
-        "parameters": [
-		  {
-			"name": "title",
-            "type": "string",
-            "description": "Title of the message box."
-		  },
-		  {
-			"name": "text",
-            "type": "string",
-            "description": "Text of the message."
-		  }
-        ]
-      },
-	  {
-        "name": "deleteAttachmentsFromSelectedMessages",
-        "type": "function",
-        "description": "Starts deletion process for selected messages.",
-        "async": true,
-        "parameters": [
-		  {
-			"name": "messages",
-            "type": "array",
-            "description": "ID's of the messages with attachments to delete.",
-			"items": {
-              "$ref": "MessageIdWithAttachments"
-            }
-		  }
-        ]
-      }
-    ]
-  }
+		],
+		"functions": [
+			{
+				"name": "detachAttachmentsFromSelectedMessages",
+				"type": "function",
+				"description": "Starts detachment process for selected messages.",
+				"async": true,
+				"parameters": [
+					{
+						"name": "messages",
+						"type": "array",
+						"description": "ID's of the messages with attachments to extract.",
+						"items": {
+							"$ref": "MessageIdWithAttachments"
+						}
+					}
+				]
+			},
+			{
+				"name": "showAlertToUser",
+				"type": "function",
+				"description": "Shows a simple alert pop-up to the user.",
+				"async": false,
+				"parameters": [
+					{
+						"name": "title",
+						"type": "string",
+						"description": "Title of the message box."
+					},
+					{
+						"name": "text",
+						"type": "string",
+						"description": "Text of the message."
+					}
+				]
+			},
+			{
+				"name": "deleteAttachmentsFromSelectedMessages",
+				"type": "function",
+				"description": "Starts deletion process for selected messages.",
+				"async": true,
+				"parameters": [
+					{
+						"name": "messages",
+						"type": "array",
+						"description": "ID's of the messages with attachments to delete.",
+						"items": {
+							"$ref": "MessageIdWithAttachments"
+						}
+					}
+				]
+			}
+		]
+	}
 ]
