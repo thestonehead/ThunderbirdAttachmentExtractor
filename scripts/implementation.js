@@ -130,7 +130,7 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 						// Therefore we work around by first saving all of the attachments to a selected folder.
 						// There are reports, that saving sometimes fails. Lets save message by message and wait for its completion.
 						let filePicker = Cc["@mozilla.org/filepicker;1"].createInstance(Ci.nsIFilePicker);
-						filePicker.init(window, "Save Attachmets", filePicker.modeGetFolder);
+						filePicker.init(window.browsingContext, "Save Attachmets", filePicker.modeGetFolder);
 						let selectedFolder = await new Promise(resolve => {
 							filePicker.open(rv => {
 								if (rv != Ci.nsIFilePicker.returnOK || !filePicker.file) {
