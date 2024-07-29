@@ -71,10 +71,48 @@ async function onClicked(info, tab){
 			allMessageAttachmentDetails
 		);
 	}
-	else if (info.menuItemId == "delete-attachments")  
-	{
-		await browser.attachmentExtractorApi.deleteAttachmentsFromSelectedMessages(allMessages);
-	}else {
+	else if (info.menuItemId == "delete-attachments") {
+		const deletableAttachmentDetails = allMessageAttachmentDetails.flatMap(d => {
+			if (d.message.external) {
+				return [];
+			}
+			const deletableAttachments = d.attachments.flatMap(a => {
+				// Bug 1910336. This information should be exposed on the
+				// attachments object directly, we should not have to search the
+				// full mime details.
+				const part = findPart(d.full.parts, a.partName);
+				return (
+					!part ||
+					part.contentType == "text/x-moz-deleted" ||
+					!part.headers ||
+					part.headers["x-mozilla-external-attachment-url"]
+				) ? [] : [a]
+			});
+			return deletableAttachments.length > 0
+				? [{ message: d.message, attachments: deletableAttachments }]
+				: []
+		});
+		if (deletableAttachmentDetails.length == 0) {
+			browser.attachmentExtractorApi.showAlertToUser(
+				"Oops",
+				"No deletable attachments found."
+			);
+			return;
+		}
+		if (await browser.attachmentExtractorApi.showPromptToUser(
+				`Are you sure`, 
+				`Do you wish to delete these attachments from your e-mails? (Irreversible!)\n - ${
+					deletableAttachmentDetails.map(d => d.attachments.map(a => a.name)).flat().join("\n - ")
+				}`
+		)) {
+			for (let messageDetail of deletableAttachmentDetails) {
+				await browser.messages.deleteAttachments(
+					messageDetail.message.id,
+					messageDetail.attachments.map(a => a.partName)
+				);
+			}
+		}
+	} else {
 		browser.attachmentExtractorApi.showAlertToUser("Oops", "Unknown action.");
 	}
 	
