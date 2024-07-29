@@ -60,6 +60,24 @@
 						"description": "Text of the message."
 					}
 				]
+			},
+			{
+				"name": "showPromptToUser",
+				"type": "function",
+				"description": "Shows a simple prompt pop-up to the user.",
+				"async": true,
+				"parameters": [
+					{
+						"name": "title",
+						"type": "string",
+						"description": "Title of the message box."
+					},
+					{
+						"name": "text",
+						"type": "string",
+						"description": "Text of the message."
+					}
+				]
 			}
 		]
 	}
