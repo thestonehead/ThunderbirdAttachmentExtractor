@@ -188,36 +188,6 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 					catch (ex) {
 						Services.wm.getMostRecentWindow("mail:3pane").alert("Error: " + ex.toString());
 					}
-				},
-				deleteAttachmentsFromSelectedMessages(messages) {
-					try {
-						const window = Services.wm.getMostRecentWindow("mail:3pane");
-						const messenger = window.messenger;
-						// Former is TB115, later is TB102.
-						const messageServiceFromURI = MailServices.messageServiceFromURI || messenger.messageServiceFromURI;
-						const [types, attachmentUrls, , messageUrls,  originalFilenames, ] = processMessages(messages, "", undefined, messageServiceFromURI);
-						const filenames = originalFilenames;
-
-						// And then after checking with the user, we delete attachments message by message without further prompts
-						if (Services.prompt.confirm(null, "Are you sure", "Do you wish to delete these attachments from your e-mails? (Irreversible!)\n" + prepareFilesNamesForDisplaying(filenames.flat()).join("\n"))) {
-							for (let i in messages) {
-								if (types[i].length == 0) {
-									continue;
-								}
-								messenger.detachAllAttachments(
-									types[i],
-									attachmentUrls[i],
-									filenames[i],
-									messageUrls[i],
-									false,
-									true
-								);
-							}
-							Services.prompt.alert(null, "Delete Attachments", "Attachments detached.");
-						}
-					} catch (ex) {
-						Services.wm.getMostRecentWindow("mail:3pane").alert("Error: " + ex.toString());
-					}
 				}
 			}
 		}

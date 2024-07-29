@@ -60,22 +60,6 @@
 						"description": "Text of the message."
 					}
 				]
-			},
-			{
-				"name": "deleteAttachmentsFromSelectedMessages",
-				"type": "function",
-				"description": "Starts deletion process for selected messages.",
-				"async": true,
-				"parameters": [
-					{
-						"name": "messages",
-						"type": "array",
-						"description": "ID's of the messages with attachments to delete.",
-						"items": {
-							"$ref": "MessageIdWithAttachments"
-						}
-					}
-				]
 			}
 		]
 	}
