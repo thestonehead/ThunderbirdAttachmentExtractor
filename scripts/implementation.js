@@ -18,7 +18,7 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 			}
 		};
 
-		const processMessages = function(messages, filenameFormat, useTemplate, messageServiceFromURI) {
+		const processMessages = function(messagesDetails, filenameFormat, useTemplate, messageServiceFromURI) {
 			const usedFilenames = {};
 			const types = [];
 			const attachmentUrls = [];
@@ -26,8 +26,10 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 			const originalFilenames = [];
 			const messageUrls = [];
 			const deletedFiles = [];
-			for (let msg of messages) {
-				let folder = context.extension.folderManager.get(msg.account, msg.folder);
+
+			for (let messageDetails of messagesDetails) {
+				let msg = messageDetails.message;
+				let folder = context.extension.folderManager.get(msg.folder.accountId, msg.folder.path);
 				let message = context.extension.messageManager.get(msg.id);
 				let messageUri = folder.getUriForMsg(message);
 				let messageService = messageServiceFromURI(messageUri);
@@ -40,7 +42,7 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 				let msgOriginalFilenames = [];
 				let msgMessageUrls = [];
 
-				for (let attachment of msg.attachments) {
+				for (let attachment of messageDetails.attachments) {
 					// If the attachment is already deleted, skip from processing
 					if (attachment.contentType == "text/x-moz-deleted") {
 						deletedFiles.push(attachment.name);
@@ -93,7 +95,7 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 
 		return {
 			attachmentExtractorApi: {
-				async detachAttachmentsFromSelectedMessages(messages) {
+				async detachAttachmentsFromSelectedMessages(messagesDetails) {
 
 
 					// Ask user for preferred attachment filename format
@@ -113,7 +115,7 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 						const messageServiceFromURI = MailServices.messageServiceFromURI || messenger.messageServiceFromURI;
 
 						// Keep track of used filenames to ensure no overlap by adding _# at the end
-						const [types, attachmentUrls, filenames, messageUrls, originalFilenames, deletedFiles] = processMessages(messages, filenameFormat, useTemplate, messageServiceFromURI);
+						const [types, attachmentUrls, filenames, messageUrls, originalFilenames, deletedFiles] = processMessages(messagesDetails, filenameFormat, useTemplate, messageServiceFromURI);
 
 						// Notify user about files that can't be saved
 						if (deletedFiles.length > 0) {
@@ -142,7 +144,7 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 							return;
 						}
 
-						for (let m = 0; m < messages.length; m++) {
+						for (let m = 0; m < messagesDetails.length; m++) {
 							for (let i = 0; i < filenames[m].length; i++) {
 								let filename = filenames[m][i];
 								let attachmentUrl = attachmentUrls[m][i];

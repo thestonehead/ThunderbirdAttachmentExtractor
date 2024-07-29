@@ -28,22 +28,23 @@ function findPart(parts, partName) {
 	return null;
 }
 
+/**
+ * Helper function for getting attachment details from a message.
+ */
+const getMessageAttachmentDetails = async function(message){
+	return {
+		message,
+		attachments: await browser.messages.listAttachments(message.id),
+		full: await browser.messages.getFull(message.id),
+	};
+}
+
 async function onClicked(info, tab){
 	if (info.menuItemId != "extract-attachments" && info.menuItemId != "delete-attachments") {
 		return;
 	}
 	
-	var allMessages = [];
-	// Helper inline function for getting attachment details from a message
-	const createMessage = async function(message){
-		const attachments = await browser.messages.listAttachments(message.id);
-		return {
-			id: message.id,
-			account: message.folder.accountId,
-			folder: message.folder.path,
-			attachments: attachments
-		};
-	}
+	var allMessageAttachmentDetails = [];
 
 	// Get first page of messages
 	let currentPage = info.selectedMessages;
@@ -54,19 +55,21 @@ async function onClicked(info, tab){
 	
 	// Iterate through the messages
 	for (let m of currentPage.messages) {
-		allMessages.push(await createMessage(m));
+		allMessageAttachmentDetails.push(await getMessageAttachmentDetails(m));
 	}
 	// As long as there is an ID, more pages can be fetched
 	while (currentPage.id) {
 		currentPage = await browser.messages.continueList(currentPage.id);
 		for (let m of currentPage.messages) {
-			allMessages.push(await createMessage(m));
+			allMessageAttachmentDetails.push(await getMessageAttachmentDetails(m));
 		}
 	}
 
 	if (info.menuItemId == "extract-attachments") {
 		// Call Experiment API to detach attachments from selected messages
-		await browser.attachmentExtractorApi.detachAttachmentsFromSelectedMessages(allMessages);
+		await browser.attachmentExtractorApi.detachAttachmentsFromSelectedMessages(
+			allMessageAttachmentDetails
+		);
 	}
 	else if (info.menuItemId == "delete-attachments")  
 	{
