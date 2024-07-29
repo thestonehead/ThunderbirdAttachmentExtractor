@@ -32,7 +32,7 @@
 					{
 						"name": "messages",
 						"type": "array",
-						"description": "ID's of the messages with attachments to extract.",
+						"description": "The details of the messages with attachments to extract.",
 						"items": {
 							"$ref": "MessageDetails"
 						}

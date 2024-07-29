@@ -100,7 +100,7 @@ async function onClicked(info, tab){
 			return;
 		}
 		if (await browser.attachmentExtractorApi.showPromptToUser(
-				`Are you sure`, 
+				`Delete attachments`, 
 				`Do you wish to delete these attachments from your e-mails? (Irreversible!)\n - ${
 					deletableAttachmentDetails.map(d => d.attachments.map(a => a.name)).flat().join("\n - ")
 				}`
@@ -111,6 +111,7 @@ async function onClicked(info, tab){
 					messageDetail.attachments.map(a => a.partName)
 				);
 			}
+			browser.attachmentExtractorApi.showAlertToUser("Delete attachments", "The requested attachments have been deleted.");
 		}
 	} else {
 		browser.attachmentExtractorApi.showAlertToUser("Oops", "Unknown action.");
