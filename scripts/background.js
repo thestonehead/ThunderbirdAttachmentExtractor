@@ -12,6 +12,22 @@ browser.menus.create({
 
 browser.menus.onClicked.addListener(onClicked);
 
+/**
+ * Helper function to find the full mime details of a part.
+ */
+function findPart(parts, partName) {
+	for (let part of parts || []) {
+		if (part.partName == partName) {
+			return part;
+		}
+		const entry = findPart(part.parts, partName);
+		if (entry) {
+			return entry;
+		}
+	}
+	return null;
+}
+
 async function onClicked(info, tab){
 	if (info.menuItemId != "extract-attachments" && info.menuItemId != "delete-attachments")  
 		return;
