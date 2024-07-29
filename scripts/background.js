@@ -29,9 +29,9 @@ function findPart(parts, partName) {
 }
 
 async function onClicked(info, tab){
-	if (info.menuItemId != "extract-attachments" && info.menuItemId != "delete-attachments")  
+	if (info.menuItemId != "extract-attachments" && info.menuItemId != "delete-attachments") {
 		return;
-		
+	}
 	
 	var allMessages = [];
 	// Helper inline function for getting attachment details from a message
@@ -77,7 +77,5 @@ async function onClicked(info, tab){
 	
 }
 
-
 function onCreated() {
 }
-
