@@ -101,6 +101,9 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 					// Ask user for preferred attachment filename format
 					let filenameFormat = { value: "%date%_%fromMail%_%subject%_%filename%" };
 					const useTemplate = Services.prompt.prompt(null, "Input your preferred filename template", "Placeholders you can use: %date%, %time%, %fromMail%, %subject%, %filename%. Press Cancel if you want to use just the original filenames.", filenameFormat, null, {});
+					if (!useTemplate) {
+						return
+					}
 
 					if (!filenameFormat.value) {
 						Services.prompt.alert(null, "Warning", "You have to enter a template for your files or press Cancel.");
