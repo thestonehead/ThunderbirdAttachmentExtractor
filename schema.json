@@ -40,6 +40,11 @@
 			"items": {
               "$ref": "MessageIdWithAttachments"
             }
+		  },
+		  {
+			"name": "version",
+            "type": "string",
+            "description": "Thunderbird version."
 		  }
         ]
       },

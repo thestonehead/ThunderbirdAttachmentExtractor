@@ -93,7 +93,7 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 
 		return {
 			attachmentExtractorApi: {
-				async detachAttachmentsFromSelectedMessages(messages) {
+				async detachAttachmentsFromSelectedMessages(messages, version) {
 
 
 					// Ask user for preferred attachment filename format
@@ -124,11 +124,19 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 							}
 						}
 
+						
+						let winCtx = window;
+						let parts = version.split(".");
+						if (parts[0] > 125) {
+							winCtx = window.browsingContext;
+						}
+						
+
 						// messenger.detachAllAttachments throws and exception when attachments from multiple messages are given
 						// Therefore we work around by first saving all of the attachments to a selected folder.
 						// There are reports, that saving sometimes fails. Lets save message by message and wait for its completion.
 						let filePicker = Cc["@mozilla.org/filepicker;1"].createInstance(Ci.nsIFilePicker);
-						filePicker.init(window, "Save Attachmets", filePicker.modeGetFolder);
+						filePicker.init(winCtx, "Save Attachments", Ci.nsIFilePicker.modeGetFolder);
 						let selectedFolder = await new Promise(resolve => {
 							filePicker.open(rv => {
 								if (rv != Ci.nsIFilePicker.returnOK || !filePicker.file) {
