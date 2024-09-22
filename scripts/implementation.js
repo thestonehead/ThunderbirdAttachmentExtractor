@@ -18,7 +18,7 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 			}
 		};
 
-		const processMessages = function(messages, filenameFormat, useTemplate, messageServiceFromURI) {
+		const processMessages = function(messagesDetails, filenameFormat, useTemplate, messageServiceFromURI) {
 			const usedFilenames = {};
 			const types = [];
 			const attachmentUrls = [];
@@ -26,8 +26,10 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 			const originalFilenames = [];
 			const messageUrls = [];
 			const deletedFiles = [];
-			for (let msg of messages) {
-				let folder = context.extension.folderManager.get(msg.account, msg.folder);
+
+			for (let messageDetails of messagesDetails) {
+				let msg = messageDetails.message;
+				let folder = context.extension.folderManager.get(msg.folder.accountId, msg.folder.path);
 				let message = context.extension.messageManager.get(msg.id);
 				let messageUri = folder.getUriForMsg(message);
 				let messageService = messageServiceFromURI(messageUri);
@@ -40,7 +42,7 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 				let msgOriginalFilenames = [];
 				let msgMessageUrls = [];
 
-				for (let attachment of msg.attachments) {
+				for (let attachment of messageDetails.attachments) {
 					// If the attachment is already deleted, skip from processing
 					if (attachment.contentType == "text/x-moz-deleted") {
 						deletedFiles.push(attachment.name);
@@ -93,12 +95,13 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 
 		return {
 			attachmentExtractorApi: {
-				async detachAttachmentsFromSelectedMessages(messages, version) {
-
-
+				async detachAttachmentsFromSelectedMessages(messagesDetails) {
 					// Ask user for preferred attachment filename format
 					let filenameFormat = { value: "%date%_%fromMail%_%subject%_%filename%" };
 					const useTemplate = Services.prompt.prompt(null, "Input your preferred filename template", "Placeholders you can use: %date%, %time%, %fromMail%, %subject%, %filename%. Press Cancel if you want to use just the original filenames.", filenameFormat, null, {});
+					if (!useTemplate) {
+						return
+					}
 
 					if (!filenameFormat.value) {
 						Services.prompt.alert(null, "Warning", "You have to enter a template for your files or press Cancel.");
@@ -113,7 +116,7 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 						const messageServiceFromURI = MailServices.messageServiceFromURI || messenger.messageServiceFromURI;
 
 						// Keep track of used filenames to ensure no overlap by adding _# at the end
-						const [types, attachmentUrls, filenames, messageUrls, originalFilenames, deletedFiles] = processMessages(messages, filenameFormat, useTemplate, messageServiceFromURI);
+						const [types, attachmentUrls, filenames, messageUrls, originalFilenames, deletedFiles] = processMessages(messagesDetails, filenameFormat, useTemplate, messageServiceFromURI);
 
 						// Notify user about files that can't be saved
 						if (deletedFiles.length > 0) {
@@ -136,7 +139,7 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 						// Therefore we work around by first saving all of the attachments to a selected folder.
 						// There are reports, that saving sometimes fails. Lets save message by message and wait for its completion.
 						let filePicker = Cc["@mozilla.org/filepicker;1"].createInstance(Ci.nsIFilePicker);
-						filePicker.init(winCtx, "Save Attachments", Ci.nsIFilePicker.modeGetFolder);
+						filePicker.init(window.browsingContext, "Save Attachmets", filePicker.modeGetFolder);
 						let selectedFolder = await new Promise(resolve => {
 							filePicker.open(rv => {
 								if (rv != Ci.nsIFilePicker.returnOK || !filePicker.file) {
@@ -150,7 +153,7 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 							return;
 						}
 
-						for (let m = 0; m < messages.length; m++) {
+						for (let m = 0; m < messagesDetails.length; m++) {
 							for (let i = 0; i < filenames[m].length; i++) {
 								let filename = filenames[m][i];
 								let attachmentUrl = attachmentUrls[m][i];
@@ -197,35 +200,14 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 						Services.wm.getMostRecentWindow("mail:3pane").alert("Error: " + ex.toString());
 					}
 				},
-				deleteAttachmentsFromSelectedMessages(messages) {
+				showPromptToUser(title, text) {
 					try {
-						const window = Services.wm.getMostRecentWindow("mail:3pane");
-						const messenger = window.messenger;
-						// Former is TB115, later is TB102.
-						const messageServiceFromURI = MailServices.messageServiceFromURI || messenger.messageServiceFromURI;
-						const [types, attachmentUrls, , messageUrls,  originalFilenames, ] = processMessages(messages, "", undefined, messageServiceFromURI);
-						const filenames = originalFilenames;
-
-						// And then after checking with the user, we delete attachments message by message without further prompts
-						if (Services.prompt.confirm(null, "Are you sure", "Do you wish to delete these attachments from your e-mails? (Irreversible!)\n" + prepareFilesNamesForDisplaying(filenames.flat()).join("\n"))) {
-							for (let i in messages) {
-								if (types[i].length == 0) {
-									continue;
-								}
-								messenger.detachAllAttachments(
-									types[i],
-									attachmentUrls[i],
-									filenames[i],
-									messageUrls[i],
-									false,
-									true
-								);
-							}
-							Services.prompt.alert(null, "Delete Attachments", "Attachments detached.");
-						}
-					} catch (ex) {
+						return Services.prompt.confirm(null, title, text);
+					}
+					catch (ex) {
 						Services.wm.getMostRecentWindow("mail:3pane").alert("Error: " + ex.toString());
 					}
+					return false;
 				}
 			}
 		}
