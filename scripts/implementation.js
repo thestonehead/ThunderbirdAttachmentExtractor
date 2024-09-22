@@ -96,8 +96,6 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 		return {
 			attachmentExtractorApi: {
 				async detachAttachmentsFromSelectedMessages(messagesDetails) {
-
-
 					// Ask user for preferred attachment filename format
 					let filenameFormat = { value: "%date%_%fromMail%_%subject%_%filename%" };
 					const useTemplate = Services.prompt.prompt(null, "Input your preferred filename template", "Placeholders you can use: %date%, %time%, %fromMail%, %subject%, %filename%. Press Cancel if you want to use just the original filenames.", filenameFormat, null, {});
@@ -128,6 +126,14 @@ var attachmentExtractorApi = class extends ExtensionCommon.ExtensionAPI {
 								return;
 							}
 						}
+
+						
+						let winCtx = window;
+						let parts = version.split(".");
+						if (parts[0] > 125) {
+							winCtx = window.browsingContext;
+						}
+						
 
 						// messenger.detachAllAttachments throws and exception when attachments from multiple messages are given
 						// Therefore we work around by first saving all of the attachments to a selected folder.

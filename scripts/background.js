@@ -66,6 +66,9 @@ async function onClicked(info, tab){
 	}
 
 	if (info.menuItemId == "extract-attachments") {
+		
+		const browserInfo = await browser.runtime.getBrowserInfo();
+		
 		// Call Experiment API to detach attachments from selected messages
 		await browser.attachmentExtractorApi.detachAttachmentsFromSelectedMessages(
 			allMessageAttachmentDetails
