@@ -2,7 +2,7 @@
 Thunderbird add-on for extracting attachments from e-mails
 
 It does two things:
- 1. It saves attachments from selected messages to a folder of your choosing
+ 1. It saves attachments from selected messages to a folder of your choice with an optional user-defined filename pattern.
  2. [Optionally] deletes those attachments from messages
  
  
@@ -13,6 +13,6 @@ This add-on enables you to do it in bulk. I would be careful in selecting a lot 
 
 _Does this delete attachments?_
 
-Only if you want it to. There's a separate menu option for deleting/detaching attachments on selected e-mails.
+Only if you want it to. There's a separate menu option for deleting/extracting attachments on selected e-mails.
 
 See add-on: https://addons.thunderbird.net/en-US/thunderbird/addon/attachment-extractor/

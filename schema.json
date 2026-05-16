@@ -24,18 +24,76 @@
 		],
 		"functions": [
 			{
-				"name": "detachAttachmentsFromSelectedMessages",
+				"name": "askUserForFilenameFormat",
 				"type": "function",
-				"description": "Starts detachment process for selected messages.",
+				"description": "Ask the user which format in the filenames should be applied when saving attachments.",
+				"async": true,
+				"parameters": []
+			},
+			{
+				"name": "askUserForDestinationFolder",
+				"type": "function",
+				"description": "Ask the user where the extracted attachments should be saved to.",
+				"async": true,
+				"parameters": []
+			},
+			{
+				"name": "getListLimitedTo",
+				"type": "function",
+				"description": "Reduce a long list to the given number of entries, where last entry tells about more entries to exist.",
+				"async": true,
+				"parameters": [
+				  {
+					"name": "longList",
+					"description": "the list which might be truncated",
+					"type": "array",
+					"items": {
+					  "type": "string"
+					}
+				  },
+				  {
+					"name": "limitTo",
+					"description": "Optional number of entries of the resulting list, defaults to a reasonable value.",
+					"optional": true,
+					"type": "integer"
+				  }
+				]
+			},
+			{
+				"name": "getFilePathForAttachment",
+				"type": "function",
+				"description": "Determines the file path to be used for saving the attachment. It checks whether the filename has been used before and makes it unique by adding a^ counter.",
 				"async": true,
 				"parameters": [
 					{
-						"name": "messages",
-						"type": "array",
-						"description": "The details of the messages with attachments to extract.",
-						"items": {
-							"$ref": "MessageDetails"
-						}
+						"name": "messageId",
+						"type": "integer",
+						"description": "id of the message"
+					},
+					{
+						"name": "attachmentName",
+						"type": "string",
+						"description": "name of the attachment"
+					}
+				]
+			},
+			{
+				"name": "saveFileTo",
+				"type": "function",
+				"description": "Saves a file to a given path.",
+				"async": true,
+				"parameters": [
+					{
+						"name": "file",
+						"type": "object",
+						"isInstanceOf": "File",
+						"additionalProperties": true,
+						"description": "The file."
+					},
+					{
+						"name": "path",
+						"type": "string",
+						"description": "Fully qualified path to file."
 					}
 				]
 			},
@@ -43,7 +101,7 @@
 				"name": "showAlertToUser",
 				"type": "function",
 				"description": "Shows a simple alert pop-up to the user.",
-				"async": false,
+				"async": true,
 				"parameters": [
 					{
 						"name": "title",

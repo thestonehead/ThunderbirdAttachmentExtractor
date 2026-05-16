@@ -2,13 +2,13 @@
     "manifest_version": 2,
     "name": "Attachment Extractor",
     "description": "Extract attachments from selected e-mails!",
-    "version": "1.8.2",
+    "version": "1.9.0",
     "author": "TheStonehead",
     "applications": {
         "gecko": {
             "id": "the_stonehead@hotmail.com",
             "strict_min_version": "125.0",
-            "strict_max_version": "130.*"
+            "strict_max_version": "147.*"
         }
     },
     "background": {
